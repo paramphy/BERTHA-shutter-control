@@ -1,3 +1,4 @@
+
 #include <Arduino.h>
 #include <AccelStepper.h>
 
@@ -29,8 +30,8 @@
 // Motor definitions
 // ------------------------------------------------------------
 
-AccelStepper shutter1(AccelStepper::DRIVER, 6, 3);
-AccelStepper shutter2(AccelStepper::DRIVER, 5, 2);
+AccelStepper shutter1(AccelStepper::FULL2WIRE, 6, 3);
+AccelStepper shutter2(AccelStepper::FULL2WIRE, 5 , 2);
 
 
 // ------------------------------------------------------------
@@ -54,7 +55,7 @@ const uint8_t OPEN_LED_PIN    = 9;
 // ------------------------------------------------------------
 
 const long CLOSED_POSITION = 0;
-const long OPEN_POSITION   = 6400;
+const long OPEN_POSITION   = 1000;
 
 
 // ------------------------------------------------------------
@@ -68,8 +69,8 @@ const long OPEN_POSITION   = 6400;
 //
 // ------------------------------------------------------------
 
-const float MAX_SPEED    = 2000.0;
-const float ACCELERATION = 100.0;
+const float MAX_SPEED    = 10000.0;
+const float ACCELERATION = 2000.0;
 
 
 // ------------------------------------------------------------
@@ -364,3 +365,60 @@ void loop()
     updateMotors();
     updateButton();
 }
+
+
+/*
+
+//OLD CODE IF NEEDED
+#include <Arduino.h>
+#include <AccelStepper.h>
+
+// Written by David Sörme, with much help from Uwe Zimmerman
+// Routine to drive stepper motors rotating the shutters for the QCMs in the sputter system BEA
+
+
+// Defining steppers and the pins the will use
+AccelStepper stepper1and2(AccelStepper::FULL2WIRE, 6, 3); // step pin 6, dir pin 3, for Y 
+AccelStepper stepper3(AccelStepper::FULL2WIRE, 5, 2); // step pin 5, dir pin 2, for X
+// for Z, dir is 4, step is 7 (not used)
+// for button, X is 9, Y is 10, Z is 11
+
+// Goal positions
+enum POS : int {
+  CLOSE = 0, 
+  OPEN = 32*800/4 // 800 is one full revelation at full step length. We use 1/32-step size, and move the shutter 90°
+};
+
+void setup()
+{ 
+  stepper1and2.setMaxSpeed(8000);  // 8000 gave a nice speed by trial and error
+  stepper1and2.setAcceleration(500.0); // same, trial and error
+  stepper3.setMaxSpeed(8000); 
+  stepper3.setAcceleration(500.0);
+  pinMode(12, INPUT_PULLUP); // 1 when button open, i.e., not connected to anything else. Button makes connection, gives 0. 
+  Serial.begin(9600); // 9600 bits per second, must match between computer and arduino. This number is preset for ard
+}
+
+void loop()
+// A while loop inside the loop to be able to define the button variable before entering the loop
+// The loop compares the button position to the one in the previous iteration, if it is different action is initiated
+// If action is initiated, the position is checked, and the goal position is changed to the other one
+{
+  int button = digitalRead(12);
+  while(1){
+    if (button == 1 && digitalRead(12) == 0){
+      if (stepper1and2.currentPosition() == CLOSE && stepper3.currentPosition() == CLOSE){
+        stepper1and2.moveTo(OPEN);
+        stepper3.moveTo(OPEN);
+      }
+      else if (stepper1and2.currentPosition() == OPEN && stepper3.currentPosition() == OPEN){
+        stepper1and2.moveTo(CLOSE);
+        stepper3.moveTo(CLOSE);
+      }
+    }
+    button = digitalRead(12);
+    stepper1and2.run();
+    stepper3.run();
+  }
+}
+*/
